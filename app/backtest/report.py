@@ -1,53 +1,29 @@
 from __future__ import annotations
-
-from collections.abc import Mapping
-from datetime import datetime
-from pathlib import Path
 import csv
-
+from pathlib import Path
+from typing import Iterable
+from app.models import Trade
 
 class BacktestReport:
+    def __init__(self, out_dir: Path | str = "reports"):
+        self.out_dir = Path(out_dir)
+        self.out_dir.mkdir(parents=True, exist_ok=True)
 
-    def __init__(self):
-        self.output = Path("reports")
-        self.output.mkdir(exist_ok=True, parents=True)
-
-    def _serialize(self, value):
-        if isinstance(value, datetime):
-            return value.isoformat()
-        return value
-
-    def _field(self, trade, field_name):
-        if isinstance(trade, Mapping):
-            return self._serialize(trade[field_name])
-        return self._serialize(getattr(trade, field_name))
-
-    def save(self, history):
-        file = self.output / "trades.csv"
-
-        with open(file, "w", newline="", encoding="utf-8") as f:
+    def save(self, trades: Iterable[Trade]) -> str:
+        path = self.out_dir / "trades_report.csv"
+        with path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "Symbol",
-                "Side",
-                "Entry",
-                "Exit",
-                "PnL",
-                "Reason",
-                "Opened",
-                "Closed",
-            ])
-
-            for trade in history:
+            writer.writerow(["symbol","side","entry","exit","amount","pnl","reason","opened_at","closed_at"])
+            for t in trades:
                 writer.writerow([
-                    self._field(trade, "symbol"),
-                    self._field(trade, "side"),
-                    self._field(trade, "entry"),
-                    self._field(trade, "exit"),
-                    self._field(trade, "pnl"),
-                    self._field(trade, "reason"),
-                    self._field(trade, "opened_at"),
-                    self._field(trade, "closed_at"),
+                    t.symbol,
+                    t.side,
+                    t.entry,
+                    t.exit,
+                    t.amount,
+                    t.pnl,
+                    t.reason,
+                    t.opened_at.isoformat() if hasattr(t.opened_at, 'isoformat') else t.opened_at,
+                    t.closed_at.isoformat() if hasattr(t.closed_at, 'isoformat') else t.closed_at,
                 ])
-
-        return file
+        return str(path)
