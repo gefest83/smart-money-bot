@@ -14,12 +14,35 @@ class TradeDatabase:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.conn = sqlite3.connect(
-            str(self.path),
-            check_same_thread=False,
-        )
+        # Try to open existing database; if it's corrupted or not a DB file,
+        # recreate a fresh database file to avoid crashes during tests or startup.
+        try:
+            self.conn = sqlite3.connect(str(self.path), check_same_thread=False)
+            try:
+                self.create_table()
+            except sqlite3.DatabaseError:
+                logger.warning("Trade database file is invalid or corrupted, recreating.")
+                try:
+                    self.conn.close()
+                except Exception:
+                    pass
+                try:
+                    # remove the invalid file and create a new database
+                    self.path.unlink(missing_ok=True)
+                except Exception:
+                    logger.exception("Failed to remove invalid trade DB file")
+                self.conn = sqlite3.connect(str(self.path), check_same_thread=False)
+                self.create_table()
 
-        self.create_table()
+        except sqlite3.DatabaseError:
+            # In case connection itself failed, attempt to recreate the file
+            logger.warning("Failed to open trade database, creating a new one.")
+            try:
+                self.path.unlink(missing_ok=True)
+            except Exception:
+                logger.exception("Failed to remove trade DB file during recovery")
+            self.conn = sqlite3.connect(str(self.path), check_same_thread=False)
+            self.create_table()
 
         logger.info(f"Trade database ready: {self.path}")
 
