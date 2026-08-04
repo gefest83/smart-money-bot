@@ -17,6 +17,9 @@ class ExchangeBase:
     def create_order(self, *args, **kwargs) -> Any:
         raise NotImplementedError
 
+    def fetch_ticker(self, symbol: str) -> dict:
+        return {}
+
     def close(self) -> None:
         pass
 
@@ -84,6 +87,23 @@ class CCXTExchange(ExchangeBase):
             raise RuntimeError("Exchange not connected")
         params = params or {}
         return self.client.create_order(symbol, type, side.lower(), amount, price, params)
+
+    def fetch_ticker(self, symbol: str) -> dict:
+        if self.client is None:
+            return {}
+        try:
+            # unified fetch_ticker
+            return self.client.fetch_ticker(symbol)
+        except Exception:
+            # fallback to last OHLCV
+            try:
+                ohlcv = self.client.fetch_ohlcv(symbol, timeframe='1m', limit=1)
+                if ohlcv and len(ohlcv) > 0:
+                    last = ohlcv[-1]
+                    return {'last': last[4], 'timestamp': last[0]}
+            except Exception:
+                pass
+        return {}
 
     def close(self) -> None:
         self.client = None
