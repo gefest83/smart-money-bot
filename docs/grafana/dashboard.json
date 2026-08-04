@@ -1,0 +1,19 @@
+{
+  "annotations": {"list": []},
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Engine Running",
+      "targets": [{"expr": "smb_engine_running", "format": "time_series"}],
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Trades Closed",
+      "targets": [{"expr": "increase(smb_trades_closed_total[1h])", "format": "time_series"}],
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}
+    }
+  ],
+  "schemaVersion": 27,
+  "title": "Smart Money Bot Overview"
+}
