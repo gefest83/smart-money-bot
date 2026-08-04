@@ -1,114 +1,92 @@
-from __future__ import annotations
-import sys
-import argparse
-from pathlib import Path
-from app.core.logger import setup_logger, logger
-from app.core.config import settings
-from app.exchanges.manager import ExchangeManager
-from app.data.market_data import MarketData
-from app.strategies.smart_money import SmartMoneyStrategy
-from app.trader.executor import Executor
-from app.database.trades import TradeDatabase
+﻿from __future__ import annotations
 from app.backtest.report import BacktestReport
+from app.config.env import env
+from app.core.config import settings
+from app.core.logger import logger, setup_logger
+from app.database.statistics import TradeStatistics
+from app.database.trades import TradeDatabase
+from app.exchanges.manager import ExchangeManager
+from app.executor.manager import ExecutorManager
+from app.strategies.simple import SimpleStrategy
 
 
-def run_backtest():
+def run() -> int:
     setup_logger()
-    logger.info("Backtest mode")
-    ex = ExchangeManager()
-    ex.connect()
-    md = MarketData(ex)
-    candles = md.fetch_candles(settings.SYMBOL, settings.TIMEFRAME, limit=1000)
-    strat = SmartMoneyStrategy()
-    signals = strat.generate_signals(candles)
-    exec = Executor()
-    db = TradeDatabase(path=settings.DATA_PATH / "trades.db")
-    closed = []
-    for i, c in enumerate(candles):
-        price = float(c[4])
-        sig = signals.get(i)
-        if sig and not exec.in_position:
-            exec.process_signal(sig, amount=1.0)
-        ct = exec.update_price(price)
-        if ct:
-            for t in ct:
-                db.add_trade(t)
-                closed.append(t)
-    if exec.in_position:
-        lp = float(candles[-1][4])
-        t = exec.close_position(lp, reason="End of backtest")
-        if t:
-            db.add_trade(t)
-            closed.append(t)
-    ex.close()
-    if closed:
-        report = BacktestReport()
-        path = report.save(closed)
-        logger.success(f"Backtest finished. Report saved: {path}")
+
+    logger.info("Запуск Smart Money Bot")
+    logger.info(
+        f"Exchange={env.exchange}, Symbol={settings.SYMBOL}, Timeframe={settings.TIMEFRAME}"
+    )
+
+    exchange = ExchangeManager()
+    exchange.connect()
+
+    try:
+        candles = exchange.fetch_ohlcv(
+            symbol=settings.SYMBOL,
+            timeframe=settings.TIMEFRAME,
+            limit=250,
+        )
+    except Exception as exc:
+        logger.error(f"Не удалось загрузить свечи: {exc}")
+        return 1
+
+    if not candles:
+        logger.error("Свечи не возвращены. Проверьте подключение к бирже.")
+        return 1
+
+    strategy = SimpleStrategy()
+    signals = strategy.generate_signals(candles)
+
+    logger.info("Сигналы рассчитаны")
+    logger.info(f"Найдено сигналов: {len(signals)}")
+
+    database = TradeDatabase(path=settings.DATA_PATH / "trades.db")
+    executor = ExecutorManager()
+    closed_trades = []
+
+    for index, candle in enumerate(candles):
+        price = float(candle[4])
+        signal = signals.get(index)
+
+        if signal and not executor.in_position:
+            result = executor.process_signal(signal)
+
+            if result:
+                logger.info(
+                    f"Открыта позиция {signal.side} {signal.symbol} по {signal.entry:.2f}"
+                )
+            else:
+                logger.info("Сигнал проигнорирован, позиция уже открыта или не удалось открыть.")
+
+        closed_trade = executor.update_price(price)
+
+        if closed_trade is not None:
+            database.add_trade(closed_trade)
+            closed_trades.append(closed_trade)
+
+    if executor.in_position:
+        last_price = float(candles[-1][4])
+        closed_trade = executor.close_position(
+            last_price,
+            reason="Закрытие по последней свече",
+        )
+
+        if closed_trade is not None:
+            database.add_trade(closed_trade)
+            closed_trades.append(closed_trade)
+
+    if closed_trades:
+        report = BacktestReport().save(closed_trades)
+        logger.success(f"Отчет сохранен: {report}")
     else:
-        logger.warning("No trades closed during backtest")
+        logger.warning("Не было закрытых сделок для отчета.")
 
+    TradeStatistics(database).calculate()
+    exchange.close()
 
-def run_paper():
-    setup_logger()
-    logger.info("Paper mode (single-run) starting")
-    # Run same flow as backtest but with smaller limits to simulate live behaviour
-    ex = ExchangeManager()
-    ex.connect()
-    md = MarketData(ex)
-    candles = md.fetch_candles(settings.SYMBOL, settings.TIMEFRAME, limit=500)
-    strat = SmartMoneyStrategy()
-    signals = strat.generate_signals(candles)
-    exec = Executor()
-    db = TradeDatabase(path=settings.DATA_PATH / "trades.db")
-    for i, c in enumerate(candles):
-        price = float(c[4])
-        sig = signals.get(i)
-        if sig and not exec.in_position:
-            exec.process_signal(sig, amount=1.0)
-        ct = exec.update_price(price)
-        if ct:
-            for t in ct:
-                db.add_trade(t)
-    if exec.in_position:
-        lp = float(candles[-1][4])
-        t = exec.close_position(lp, reason="End of paper run")
-        if t:
-            db.add_trade(t)
-    ex.close()
-    logger.info("Paper run finished")
-
-
-def run_live():
-    setup_logger()
-    logger.info("Live mode (testnet recommended)")
-    # Live mode requires API keys and careful handling; here we only connect and log the balance
-    ex = ExchangeManager()
-    ex.connect()
-    bal = ex.fetch_balance()
-    logger.info(f"Balance snapshot: {bal}")
-    ex.close()
+    return 0
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["backtest", "paper", "live", "web"], default=settings.MODE)
-    args = parser.parse_args()
-    mode = args.mode
-
-    if mode == "backtest":
-        run_backtest()
-    elif mode == "paper":
-        run_paper()
-    elif mode == "live":
-        run_live()
-    elif mode == "web":
-        # run FastAPI web UI
-        try:
-            import uvicorn
-            logger.info("Starting web UI on http://127.0.0.1:8000")
-            uvicorn.run("app.webapp.api:app", host="0.0.0.0", port=8000, log_level="info")
-        except Exception as exc:
-            logger.exception("Failed to start web server")
-    else:
-        print("Unknown mode")
+    raise SystemExit(run())

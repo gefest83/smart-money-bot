@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from statistics import mean
 from typing import Dict
 
@@ -26,8 +26,8 @@ class SimpleStrategy:
         signals: dict[int, Signal] = {}
 
         for index in range(self.slow_period, len(closes)):
-            fast_sma = mean(closes[index - self.fast_period : index])
-            slow_sma = mean(closes[index - self.slow_period : index])
+            fast_sma = mean(closes[index - self.fast_period:index])
+            slow_sma = mean(closes[index - self.slow_period:index])
             current_close = closes[index - 1]
             previous_close = closes[index - 2]
 

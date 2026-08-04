@@ -150,3 +150,153 @@ Profit:
 ===========================================
 
 2026-08-04 23:39:47 | INFO     | app.exchanges.manager:close:185 - Exchange connection closed
+2026-08-05 01:58:28 | INFO     | main:run:18 - Запуск Smart Money Bot
+2026-08-05 01:58:28 | INFO     | main:run:19 - Exchange=binance, Symbol=BTC/USDT, Timeframe=15m
+2026-08-05 01:58:28 | WARNING  | app.exchanges.manager:connect:37 - 
+API ключи не найдены.
+
+Работаем только в режиме чтения.
+Баланс и реальные ордера недоступны.
+
+2026-08-05 01:58:28 | WARNING  | app.exchanges.manager:connect:58 - TESTNET MODE ENABLED
+2026-08-05 01:58:28 | SUCCESS  | app.exchanges.manager:connect:62 - Подключение к BINANCE успешно
+2026-08-05 01:58:32 | INFO     | main:run:43 - Сигналы рассчитаны
+2026-08-05 01:58:32 | INFO     | main:run:44 - Найдено сигналов: 96
+2026-08-05 01:58:32 | INFO     | app.database.trades:__init__:47 - Trade database ready: data\trades.db
+2026-08-05 01:58:32 | INFO     | app.executor.manager:__init__:14 - 
+================ EXECUTOR ================
+
+Mode:
+PAPER
+
+==========================================
+
+2026-08-05 01:58:32 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63527.44 с размером 3.14821811
+2026-08-05 01:58:32 | INFO     | main:run:58 - Открыта позиция BUY BTC/USDT по 63527.44
+2026-08-05 01:58:32 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 8893.56
+2026-08-05 01:58:32 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 63175.99. PnL=-1106.44
+2026-08-05 01:58:32 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63219.32 с размером 2.81352697
+2026-08-05 01:58:32 | INFO     | main:run:58 - Открыта позиция BUY BTC/USDT по 63219.32
+2026-08-05 01:58:32 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 7927.62
+2026-08-05 01:58:32 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 62876.00. PnL=-965.94
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 62876.00 с размером 2.52166762
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция SELL BTC/USDT по 62876.00
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 6666.76
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63376.01. PnL=-1260.86
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63314.32 с размером 2.10593538
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция SELL BTC/USDT по 63314.32
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 5686.07
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63780.00. PnL=-980.69
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63780.00 с размером 1.78302529
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция BUY BTC/USDT по 63780.00
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 5005.59
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 63398.36. PnL=-680.47
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63350.53 с размером 1.58029799
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция SELL BTC/USDT по 63350.53
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 4323.49
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63782.16. PnL=-682.10
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63777.13 с размером 1.35579349
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция SELL BTC/USDT по 63777.13
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 3886.67
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 64099.32. PnL=-436.82
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 64099.32 с размером 1.21268853
+2026-08-05 01:58:33 | INFO     | main:run:58 - Открыта позиция BUY BTC/USDT по 64099.32
+2026-08-05 01:58:33 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 4081.12
+2026-08-05 01:58:33 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 64259.67. PnL=194.45
+2026-08-05 01:58:33 | SUCCESS  | main:run:83 - Отчет сохранен: reports\trades.csv
+2026-08-05 01:58:33 | INFO     | app.database.statistics:calculate:52 - 
+================ STATISTICS ================
+
+Trades:
+18
+
+Wins:
+2
+
+Losses:
+16
+
+Winrate:
+11.11 %
+
+Profit:
+-12483.47 USDT
+
+===========================================
+
+2026-08-05 01:58:33 | INFO     | app.exchanges.manager:close:185 - Exchange connection closed
+2026-08-05 02:01:08 | INFO     | main:run:16 - Запуск Smart Money Bot
+2026-08-05 02:01:08 | INFO     | main:run:17 - Exchange=binance, Symbol=BTC/USDT, Timeframe=15m
+2026-08-05 02:01:08 | WARNING  | app.exchanges.manager:connect:37 - 
+API ключи не найдены.
+
+Работаем только в режиме чтения.
+Баланс и реальные ордера недоступны.
+
+2026-08-05 02:01:08 | WARNING  | app.exchanges.manager:connect:58 - TESTNET MODE ENABLED
+2026-08-05 02:01:08 | SUCCESS  | app.exchanges.manager:connect:62 - Подключение к BINANCE успешно
+2026-08-05 02:01:13 | INFO     | main:run:41 - Сигналы рассчитаны
+2026-08-05 02:01:13 | INFO     | main:run:42 - Найдено сигналов: 96
+2026-08-05 02:01:13 | INFO     | app.database.trades:__init__:47 - Trade database ready: data\trades.db
+2026-08-05 02:01:13 | INFO     | app.executor.manager:__init__:14 - 
+================ EXECUTOR ================
+
+Mode:
+PAPER
+
+==========================================
+
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63527.44 с размером 3.14821811
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция BUY BTC/USDT по 63527.44
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 8893.56
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 63175.99. PnL=-1106.44
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63219.32 с размером 2.81352697
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция BUY BTC/USDT по 63219.32
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 7927.62
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 62876.00. PnL=-965.94
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 62876.00 с размером 2.52166762
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция SELL BTC/USDT по 62876.00
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 6666.76
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63376.01. PnL=-1260.86
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63314.32 с размером 2.10593538
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция SELL BTC/USDT по 63314.32
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 5686.07
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63780.00. PnL=-980.69
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 63780.00 с размером 1.78302529
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция BUY BTC/USDT по 63780.00
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 5005.59
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 63398.36. PnL=-680.47
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63350.53 с размером 1.58029799
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция SELL BTC/USDT по 63350.53
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 4323.49
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 63782.16. PnL=-682.10
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция SELL BTC/USDT по 63777.13 с размером 1.35579349
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция SELL BTC/USDT по 63777.13
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 3886.67
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция SELL BTC/USDT по 64099.32. PnL=-436.82
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:open_position:58 - Открыта бумажная позиция BUY BTC/USDT по 64099.32 с размером 1.21268853
+2026-08-05 02:01:13 | INFO     | main:run:56 - Открыта позиция BUY BTC/USDT по 64099.32
+2026-08-05 02:01:13 | INFO     | app.executor.paper:_apply_pnl:158 - Баланс после сделки: 4040.28
+2026-08-05 02:01:13 | SUCCESS  | app.executor.paper:close_position:83 - Закрыта бумажная позиция BUY BTC/USDT по 64225.99. PnL=153.61
+2026-08-05 02:01:13 | SUCCESS  | main:run:81 - Отчет сохранен: reports\trades.csv
+2026-08-05 02:01:13 | INFO     | app.database.statistics:calculate:52 - 
+================ STATISTICS ================
+
+Trades:
+26
+
+Wins:
+3
+
+Losses:
+23
+
+Winrate:
+11.54 %
+
+Profit:
+-18443.19 USDT
+
+===========================================
+
+2026-08-05 02:01:13 | INFO     | app.exchanges.manager:close:185 - Exchange connection closed
