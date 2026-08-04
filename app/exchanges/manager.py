@@ -2,9 +2,16 @@ from __future__ import annotations
 from .exchange import CCXTExchange
 from app.core.config import settings
 
+
 class ExchangeManager:
     def __init__(self, api_key: str | None = None, secret: str | None = None):
-        self.exchange = CCXTExchange(id=settings.EXCHANGE, testnet=settings.TESTNET, api_key=api_key, secret=secret, market=settings.MARKET)
+        self.exchange = CCXTExchange(
+            id=settings.EXCHANGE,
+            testnet=settings.TESTNET,
+            api_key=api_key,
+            secret=secret,
+            market=settings.MARKET,
+        )
 
     def connect(self) -> None:
         self.exchange.connect()

@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Dict
 from app.models import Signal
 
+
 class SignalEngine:
     def __init__(self):
         self.signals: Dict[int, Signal] = {}

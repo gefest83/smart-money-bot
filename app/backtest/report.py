@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 from app.models import Trade
 
+
 class BacktestReport:
     def __init__(self, out_dir: Path | str = "reports"):
         self.out_dir = Path(out_dir)
@@ -13,7 +14,10 @@ class BacktestReport:
         path = self.out_dir / "trades_report.csv"
         with path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["symbol","side","entry","exit","amount","pnl","reason","opened_at","closed_at"])
+            writer.writerow([
+                "symbol", "side", "entry", "exit", "amount", "pnl", "reason",
+                "opened_at", "closed_at",
+            ])
             for t in trades:
                 writer.writerow([
                     t.symbol,

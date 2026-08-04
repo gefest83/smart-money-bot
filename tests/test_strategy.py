@@ -10,7 +10,12 @@ def make_candles(prices):
 
 
 def test_generate_signals_simple():
-    strat = SmartMoneyStrategy(structure_period=2, confirmation='Body', volatility_multiplier=1.0, atr_period=2)
+    strat = SmartMoneyStrategy(
+        structure_period=2,
+        confirmation='Body',
+        volatility_multiplier=1.0,
+        atr_period=2,
+    )
     # create small price series with a breakout up
     prices = [100, 101, 102, 110, 111, 112]
     candles = make_candles(prices)

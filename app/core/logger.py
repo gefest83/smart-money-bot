@@ -1,11 +1,10 @@
 from __future__ import annotations
 from loguru import logger
-from pathlib import Path
 from .config import settings
 from app.webapp.log_buffer import push_log
 
 
-def _buffer_sink(message):
+def _buffer_sink(message) -> None:
     record = message.record
     text = message
     try:

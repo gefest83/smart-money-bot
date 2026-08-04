@@ -1,6 +1,7 @@
 from __future__ import annotations
 from app.exchanges.manager import ExchangeManager
 
+
 class MarketData:
     def __init__(self, exchange_manager: ExchangeManager):
         self._ex = exchange_manager

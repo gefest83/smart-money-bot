@@ -1,7 +1,13 @@
 from __future__ import annotations
 from typing import Sequence
 
-def simple_pivots(highs: Sequence[float], lows: Sequence[float], closes: Sequence[float], window: int = 5):
+
+def simple_pivots(
+    highs: Sequence[float],
+    lows: Sequence[float],
+    closes: Sequence[float],
+    window: int = 5,
+):
     pivots = []
     n = len(closes)
     for i in range(window, n - window):

@@ -1,6 +1,11 @@
 from __future__ import annotations
 from pathlib import Path
-from pydantic import BaseSettings
+try:
+    from pydantic import BaseSettings  # type: ignore
+except Exception:
+    # pydantic v2 moved BaseSettings to pydantic-settings package
+    from pydantic_settings import BaseSettings  # type: ignore
+
 
 class Settings(BaseSettings):
     SYMBOL: str = "BTC/USDT"
@@ -14,8 +19,12 @@ class Settings(BaseSettings):
     TELEGRAM_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
     RISK_PERCENT: float = 1.0
+    LEVERAGE: int = 1
+    PAPER_BALANCE: float = 1000.0
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
+
 
 settings = Settings()

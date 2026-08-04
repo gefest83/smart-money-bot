@@ -2,7 +2,6 @@ from __future__ import annotations
 import threading
 import time
 import traceback
-from typing import Optional
 from app.core.logger import logger, setup_logger
 from app.exchanges.manager import ExchangeManager
 from app.strategies.smart_money import SmartMoneyStrategy
@@ -14,7 +13,13 @@ from app.metrics import trades_closed_total, signals_generated_total, engine_run
 
 
 class TradingEngine:
-    def __init__(self, mode: str = 'paper', poll_interval: int = 10, order_amount: float = 1.0, handle_signals: bool = True):
+    def __init__(
+        self,
+        mode: str = 'paper',
+        poll_interval: int = 10,
+        order_amount: float = 1.0,
+        handle_signals: bool = True,
+    ):
         self.mode = mode
         self.poll_interval = poll_interval
         self.order_amount = order_amount
@@ -30,9 +35,11 @@ class TradingEngine:
 
     def start(self):
         setup_logger()
-        logger.info(f"Starting trading engine in {self.mode} mode. Poll every {self.poll_interval}s")
+        logger.info(f"Starting trading engine in {self.mode} mode.")
+        logger.info(f"Poll interval: {self.poll_interval}s")
 
-        # only register signals when running as main process; when run in web thread, manager will not set this
+        # only register signals when running as main process
+        # when run in a web thread the manager will not set signal handlers
         if self.handle_signals:
             import signal
             signal.signal(signal.SIGINT, lambda s, f: self.stop())
@@ -74,7 +81,11 @@ class TradingEngine:
     def _tick(self):
         # fetch market data
         try:
-            candles = self.exchange_manager.fetch_ohlcv(settings.SYMBOL, settings.TIMEFRAME, limit=200)
+            candles = self.exchange_manager.fetch_ohlcv(
+                settings.SYMBOL,
+                settings.TIMEFRAME,
+                limit=200,
+            )
         except Exception as exc:
             logger.warning(f"Failed to fetch candles: {exc}")
             return
@@ -139,10 +150,22 @@ class TradingEngine:
             try:
                 order = None
                 try:
-                    order = self.exchange_manager.exchange.create_order(sig.symbol, sig.side, 'market', self.order_amount, None, {})
+                    order = self.exchange_manager.exchange.create_order(
+                        sig.symbol,
+                        sig.side,
+                        'market',
+                        self.order_amount,
+                        None,
+                        {},
+                    )
                 except TypeError:
                     # try ccxt positional
-                    order = self.exchange_manager.exchange.create_order(sig.symbol, 'market', sig.side.lower(), self.order_amount)
+                    order = self.exchange_manager.exchange.create_order(
+                        sig.symbol,
+                        'market',
+                        sig.side.lower(),
+                        self.order_amount,
+                    )
                 except Exception as exc:
                     logger.exception(f"Live order failed: {exc}")
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 import requests
 from app.core.config import settings
 
+
 class TelegramNotifier:
     def __init__(self):
         self.token = settings.TELEGRAM_TOKEN

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from app.core.config import settings
 
+
 class RiskManager:
     def __init__(self):
         self.risk_percent = settings.RISK_PERCENT

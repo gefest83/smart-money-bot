@@ -2,6 +2,7 @@ from __future__ import annotations
 import ccxt
 from typing import Any
 
+
 class ExchangeBase:
     """Light wrapper interface for exchanges."""
 
@@ -28,12 +29,20 @@ class ExchangeBase:
 
     def close(self) -> None:
         pass
+
 
 class CCXTExchange(ExchangeBase):
     # map friendly exchange ids to ccxt ids when necessary
     SUPPORTED = {"binance", "bybit", "okx", "bingx", "mexc"}
 
-    def __init__(self, id: str = "binance", testnet: bool = True, api_key: str | None = None, secret: str | None = None, market: str = "spot"):
+    def __init__(
+        self,
+        id: str = "binance",
+        testnet: bool = True,
+        api_key: str | None = None,
+        secret: str | None = None,
+        market: str = "spot",
+    ):
         self.id = id
         self.testnet = testnet
         self.api_key = api_key
@@ -52,7 +61,11 @@ class CCXTExchange(ExchangeBase):
             self.client = ccxt.Exchange({})
             raise RuntimeError(f"Exchange {self.id} not supported in CCXT: {exc}")
 
-        params: dict[str, Any] = {"apiKey": self.api_key or "", "secret": self.secret or "", "enableRateLimit": True}
+        params: dict[str, Any] = {
+            "apiKey": self.api_key or "",
+            "secret": self.secret or "",
+            "enableRateLimit": True,
+        }
 
         if self.market and self.market.lower() in ("futures", "future"):
             params.setdefault("options", {})
@@ -80,16 +93,25 @@ class CCXTExchange(ExchangeBase):
         except Exception:
             return {}
 
-    def create_order(self, symbol: str, side: str, type: str, amount: float, price: float | None = None, params: dict | None = None) -> Any:
+    def create_order(
+        self,
+        symbol: str,
+        side: str,
+        order_type: str,
+        amount: float,
+        price: float | None = None,
+        params: dict | None = None,
+    ) -> Any:
         if self.client is None:
             raise RuntimeError("Exchange not connected")
         params = params or {}
         try:
-            return self.client.create_order(symbol, type, side.lower(), amount, price, params)
+            # preferred call with named args where supported
+            return self.client.create_order(symbol, order_type, side.lower(), amount, price, params)
         except Exception as exc:
-            # some exchanges vary positional args
+            # some exchanges vary positional args; try common fallback
             try:
-                return self.client.create_order(symbol, type, side.lower(), amount)
+                return self.client.create_order(symbol, order_type, side.lower(), amount)
             except Exception:
                 raise exc
 

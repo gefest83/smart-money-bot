@@ -1,7 +1,13 @@
 from __future__ import annotations
 from typing import Sequence
 
-def atr(highs: Sequence[float], lows: Sequence[float], closes: Sequence[float], period: int = 14) -> list[float]:
+
+def atr(
+    highs: Sequence[float],
+    lows: Sequence[float],
+    closes: Sequence[float],
+    period: int = 14,
+) -> list[float]:
     if not (len(highs) == len(lows) == len(closes)):
         raise ValueError("Input series must have equal length")
 

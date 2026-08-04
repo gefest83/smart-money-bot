@@ -30,8 +30,10 @@ class Executor:
         return True
 
     def update_price(self, price: float) -> list[Trade] | None:
-        """
-        Called on each new price tick (bar close). Returns list of Trade objects closed at this price (could be partial closes), or None.
+        """Called on each new price tick (bar close).
+
+        Returns a list of Trade objects closed at this price (could be
+        partial closes), or None if nothing closed.
         """
         if not self.in_position or self.position is None:
             return None
@@ -47,7 +49,17 @@ class Executor:
             if pos.take_profit_3 is not None and pos.remaining > 0 and price >= pos.take_profit_3:
                 amt = pos.remaining * tp_fractions[2]
                 pnl = (pos.take_profit_3 - pos.entry) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_3, amt, pnl, "TP3", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_3,
+                    amt,
+                    pnl,
+                    "TP3",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
@@ -55,7 +67,17 @@ class Executor:
             if pos.take_profit_2 is not None and pos.remaining > 0 and price >= pos.take_profit_2:
                 amt = pos.remaining * tp_fractions[1]
                 pnl = (pos.take_profit_2 - pos.entry) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_2, amt, pnl, "TP2", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_2,
+                    amt,
+                    pnl,
+                    "TP2",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
@@ -63,7 +85,17 @@ class Executor:
             if pos.take_profit_1 is not None and pos.remaining > 0 and price >= pos.take_profit_1:
                 amt = pos.remaining * tp_fractions[0]
                 pnl = (pos.take_profit_1 - pos.entry) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_1, amt, pnl, "TP1", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_1,
+                    amt,
+                    pnl,
+                    "TP1",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
@@ -71,7 +103,17 @@ class Executor:
             if pos.stop_loss is not None and pos.remaining > 0 and price <= pos.stop_loss:
                 amt = pos.remaining
                 pnl = (price - pos.entry) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, price, amt, pnl, "Stop Loss", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    price,
+                    amt,
+                    pnl,
+                    "Stop Loss",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining = 0
 
@@ -80,21 +122,51 @@ class Executor:
             if pos.take_profit_3 is not None and pos.remaining > 0 and price <= pos.take_profit_3:
                 amt = pos.remaining * tp_fractions[2]
                 pnl = (pos.entry - pos.take_profit_3) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_3, amt, pnl, "TP3", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_3,
+                    amt,
+                    pnl,
+                    "TP3",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
             if pos.take_profit_2 is not None and pos.remaining > 0 and price <= pos.take_profit_2:
                 amt = pos.remaining * tp_fractions[1]
                 pnl = (pos.entry - pos.take_profit_2) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_2, amt, pnl, "TP2", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_2,
+                    amt,
+                    pnl,
+                    "TP2",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
             if pos.take_profit_1 is not None and pos.remaining > 0 and price <= pos.take_profit_1:
                 amt = pos.remaining * tp_fractions[0]
                 pnl = (pos.entry - pos.take_profit_1) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, pos.take_profit_1, amt, pnl, "TP1", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    pos.take_profit_1,
+                    amt,
+                    pnl,
+                    "TP1",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining -= amt
 
@@ -102,7 +174,17 @@ class Executor:
             if pos.stop_loss is not None and pos.remaining > 0 and price >= pos.stop_loss:
                 amt = pos.remaining
                 pnl = (pos.entry - price) * amt
-                trade = Trade(pos.symbol, pos.side, pos.entry, price, amt, pnl, "Stop Loss", pos.opened_at, datetime.utcnow())
+                trade = Trade(
+                    pos.symbol,
+                    pos.side,
+                    pos.entry,
+                    price,
+                    amt,
+                    pnl,
+                    "Stop Loss",
+                    pos.opened_at,
+                    datetime.utcnow(),
+                )
                 closed_trades.append(trade)
                 pos.remaining = 0
 

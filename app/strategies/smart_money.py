@@ -1,12 +1,16 @@
 from __future__ import annotations
 from typing import Dict, List, Optional
-from statistics import mean
 
 from app.models import Signal
 from app.core.config import settings
 
 
-def _atr(highs: List[float], lows: List[float], closes: List[float], period: int = 14) -> List[float]:
+def _atr(
+    highs: List[float],
+    lows: List[float],
+    closes: List[float],
+    period: int = 14,
+) -> List[float]:
     trs: List[float] = []
     for i in range(1, len(closes)):
         tr = max(
@@ -29,22 +33,38 @@ def _atr(highs: List[float], lows: List[float], closes: List[float], period: int
 
 class SmartMoneyStrategy:
     """
-    Port of the TradingView Pine Script Smart Money Trades Pro (BOSWaves) — simplified deterministic version.
+    Port of the TradingView Pine Script Smart Money Trades Pro (BOSWaves) —
+    simplified deterministic version.
 
     Behavior:
-    - Detect pivot highs/lows using symmetric lookback `structure_period`.
-    - When a pivot is found, wait for a break (by body or wick) to trigger an entry at pivot price.
-    - Calculate ATR-based dynamic range for TP/SL levels using volatility_multiplier.
-    - Emit a Signal at the bar where the break occurs, with stop/tp levels attached.
+    - Detect pivot highs/lows using symmetric lookback
+      `structure_period`.
+    - When a pivot is found, wait for a break (by body or wick) to
+      trigger an entry at pivot price.
+    - Calculate ATR-based dynamic range for TP/SL levels using
+      volatility_multiplier.
+    - Emit a Signal at the bar where the break occurs, with stop/tp
+      levels attached.
     """
 
-    def __init__(self, structure_period: int = 20, confirmation: str = "Body", volatility_multiplier: float = 2.0, atr_period: int = 14):
+    def __init__(
+        self,
+        structure_period: int = 20,
+        confirmation: str = "Body",
+        volatility_multiplier: float = 2.0,
+        atr_period: int = 14,
+    ):
+
         self.structure_period = max(5, min(50, structure_period))
         self.confirmation = confirmation  # "Body" or "Wick"
         self.volatility_multiplier = volatility_multiplier
         self.atr_period = atr_period
 
-    def _pivots(self, highs: List[float], lows: List[float]) -> (List[Optional[int]], List[Optional[int]]):
+    def _pivots(
+        self,
+        highs: List[float],
+        lows: List[float],
+    ) -> (List[Optional[int]], List[Optional[int]]):
         n = len(highs)
         left = right = self.structure_period
         pivot_highs: List[Optional[int]] = [None] * n
