@@ -1,0 +1,13 @@
+[Unit]
+Description=Smart Money Bot service
+After=network.target
+
+[Service]
+User=youruser
+WorkingDirectory=/opt/smart-money-bot
+ExecStart=/usr/bin/python3 /opt/smart-money-bot/main.py --mode paper
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

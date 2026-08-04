@@ -1,6 +1,5 @@
 from __future__ import annotations
 import threading
-import signal
 import time
 import traceback
 from typing import Optional
@@ -11,10 +10,11 @@ from app.trader.executor import Executor
 from app.database.trades import TradeDatabase
 from app.backtest.report import BacktestReport
 from app.core.config import settings
+from app.metrics import trades_closed_total, signals_generated_total, engine_running
 
 
 class TradingEngine:
-    def __init__(self, mode: str = 'paper', poll_interval: int = 10, order_amount: float = 1.0):
+    def __init__(self, mode: str = 'paper', poll_interval: int = 10, order_amount: float = 1.0, handle_signals: bool = True):
         self.mode = mode
         self.poll_interval = poll_interval
         self.order_amount = order_amount
@@ -26,19 +26,24 @@ class TradingEngine:
         self.db = TradeDatabase(path=settings.DATA_PATH / "trades.db")
         self.reporter = BacktestReport()
         self.notifier = None  # optional TelegramNotifier if configured
+        self.handle_signals = handle_signals
 
     def start(self):
         setup_logger()
         logger.info(f"Starting trading engine in {self.mode} mode. Poll every {self.poll_interval}s")
 
-        # handle signals for graceful shutdown
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
+        # only register signals when running as main process; when run in web thread, manager will not set this
+        if self.handle_signals:
+            import signal
+            signal.signal(signal.SIGINT, lambda s, f: self.stop())
+            signal.signal(signal.SIGTERM, lambda s, f: self.stop())
 
         try:
             self.exchange_manager.connect()
         except Exception as exc:
             logger.exception("Failed to connect to exchange manager")
+
+        engine_running.set(1)
 
         # main loop
         try:
@@ -48,12 +53,13 @@ class TradingEngine:
                 except Exception as exc:
                     logger.error(f"Error during tick: {exc}")
                     logger.debug(traceback.format_exc())
-                # wait with small sleeps to be responsive to shutdown
+                # wait responsive
                 for _ in range(int(max(1, self.poll_interval))):
                     if self._stop_event.is_set():
                         break
                     time.sleep(1)
         finally:
+            engine_running.set(0)
             logger.info("Shutting down trading engine")
             try:
                 self.exchange_manager.close()
@@ -64,10 +70,6 @@ class TradingEngine:
     def stop(self):
         logger.info("Stop requested")
         self._stop_event.set()
-
-    def _signal_handler(self, signum, frame):
-        logger.info(f"Received signal {signum}, shutting down gracefully")
-        self.stop()
 
     def _tick(self):
         # fetch market data
@@ -99,6 +101,7 @@ class TradingEngine:
                         self.db.add_trade(t)
                     except Exception:
                         logger.exception("Failed to save trade to DB")
+                trades_closed_total.inc(len(closed))
                 # report on each closure
                 try:
                     self.reporter.save(closed)
@@ -111,6 +114,8 @@ class TradingEngine:
         if not signals:
             logger.debug("No signals")
             return
+
+        signals_generated_total.inc(len(signals))
 
         # pick most recent signal (highest index)
         latest_idx = max(signals.keys())
@@ -154,7 +159,6 @@ class TradingEngine:
                     except Exception:
                         price_fill = sig.entry
 
-                    # construct in-memory position
                     fake_signal = sig
                     fake_signal.entry = float(price_fill)
                     opened = self.executor.process_signal(fake_signal, amount=self.order_amount)
