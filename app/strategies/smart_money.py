@@ -1,59 +1,168 @@
 from __future__ import annotations
-from typing import Dict, List
+from typing import Dict, List, Optional
 from statistics import mean
 
 from app.models import Signal
 from app.core.config import settings
 
-class SmartMoneyStrategy:
-    """Very small proof-of-concept SmartMoney strategy based on SMA + ATR filter."""
 
-    def __init__(self, fast: int = 20, slow: int = 50, atr_period: int = 14):
-        self.fast = fast
-        self.slow = slow
+def _atr(highs: List[float], lows: List[float], closes: List[float], period: int = 14) -> List[float]:
+    trs: List[float] = []
+    for i in range(1, len(closes)):
+        tr = max(
+            highs[i] - lows[i],
+            abs(highs[i] - closes[i - 1]),
+            abs(lows[i] - closes[i - 1]),
+        )
+        trs.append(tr)
+    atrs: List[float] = []
+    if len(trs) < period:
+        return atrs
+    # simple moving average of TR
+    for i in range(period - 1, len(trs)):
+        window = trs[i - (period - 1) : i + 1]
+        atrs.append(sum(window) / period)
+    # pad to align with input (atr for bar index i corresponds to i+1 in closes)
+    # we'll return atrs aligned to closes[period:]
+    return atrs
+
+
+class SmartMoneyStrategy:
+    """
+    Port of the TradingView Pine Script Smart Money Trades Pro (BOSWaves) — simplified deterministic version.
+
+    Behavior:
+    - Detect pivot highs/lows using symmetric lookback `structure_period`.
+    - When a pivot is found, wait for a break (by body or wick) to trigger an entry at pivot price.
+    - Calculate ATR-based dynamic range for TP/SL levels using volatility_multiplier.
+    - Emit a Signal at the bar where the break occurs, with stop/tp levels attached.
+    """
+
+    def __init__(self, structure_period: int = 20, confirmation: str = "Body", volatility_multiplier: float = 2.0, atr_period: int = 14):
+        self.structure_period = max(5, min(50, structure_period))
+        self.confirmation = confirmation  # "Body" or "Wick"
+        self.volatility_multiplier = volatility_multiplier
         self.atr_period = atr_period
+
+    def _pivots(self, highs: List[float], lows: List[float]) -> (List[Optional[int]], List[Optional[int]]):
+        n = len(highs)
+        left = right = self.structure_period
+        pivot_highs: List[Optional[int]] = [None] * n
+        pivot_lows: List[Optional[int]] = [None] * n
+        for i in range(left, n - right):
+            window_h = highs[i - left : i + right + 1]
+            window_l = lows[i - left : i + right + 1]
+            if highs[i] == max(window_h):
+                pivot_highs[i] = i
+            if lows[i] == min(window_l):
+                pivot_lows[i] = i
+        return pivot_highs, pivot_lows
 
     def generate_signals(self, candles: List[List[float]]) -> Dict[int, Signal]:
         # candles: [timestamp, open, high, low, close, volume]
-        closes = [float(c[4]) for c in candles]
+        n = len(candles)
+        if n < self.structure_period + self.atr_period + 2:
+            return {}
+
         highs = [float(c[2]) for c in candles]
         lows = [float(c[3]) for c in candles]
+        closes = [float(c[4]) for c in candles]
 
-        signals: dict[int, Signal] = {}
-        if len(closes) < self.slow + 2:
-            return signals
+        pivot_highs, pivot_lows = self._pivots(highs, lows)
 
-        for idx in range(self.slow, len(closes)):
-            fast_sma = mean(closes[idx - self.fast : idx])
-            slow_sma = mean(closes[idx - self.slow : idx])
-            cur = closes[idx - 1]
-            prev = closes[idx - 2]
+        # precompute ATR aligned roughly to closes index
+        atr_series = _atr(highs, lows, closes, period=self.atr_period)
+        # atr_series corresponds to trs window starting at index self.atr_period in closes
+        signals: Dict[int, Signal] = {}
 
-            # ATR simple calc
-            trs = [max(h - l, abs(h - closes[i - 1]) if i > 0 else 0, abs(l - closes[i - 1]) if i > 0 else 0)
-                   for i, (h, l) in enumerate(zip(highs, lows))]
-            if len(trs) < self.atr_period:
-                continue
-            atr = mean(trs[-self.atr_period:])
+        last_high = None
+        last_low = None
+        last_high_bar = None
+        last_low_bar = None
 
-            # signal logic
-            if fast_sma > slow_sma and cur > prev and cur - prev > 0.2 * atr:
-                signals[idx] = Signal(
-                    symbol=settings.SYMBOL,
-                    side="BUY",
-                    entry=cur,
-                    stop_loss=round(cur - 1.5 * atr, 2),
-                    take_profit_1=round(cur + 2 * atr, 2),
-                    reason="smart_money_long",
-                )
-            elif fast_sma < slow_sma and cur < prev and prev - cur > 0.2 * atr:
-                signals[idx] = Signal(
-                    symbol=settings.SYMBOL,
-                    side="SELL",
-                    entry=cur,
-                    stop_loss=round(cur + 1.5 * atr, 2),
-                    take_profit_1=round(cur - 2 * atr, 2),
-                    reason="smart_money_short",
-                )
+        # iterate bars and record pivots, then watch for breakouts
+        for i in range(n):
+            # detect pivot registration
+            if pivot_highs[i] is not None:
+                last_high = highs[i]
+                last_high_bar = i
+            if pivot_lows[i] is not None:
+                last_low = lows[i]
+                last_low_bar = i
+
+            # check for break after pivots
+            if last_high is not None:
+                # break condition: body or wick
+                broken = False
+                if self.confirmation == "Body":
+                    if closes[i] > last_high:
+                        broken = True
+                else:
+                    if highs[i] > last_high:
+                        broken = True
+                if broken:
+                    # compute ATR at this bar index (use nearest available)
+                    atr_idx = i - (self.atr_period)
+                    atr_value = None
+                    if atr_idx >= 0 and atr_idx < len(atr_series):
+                        atr_value = atr_series[atr_idx]
+                    else:
+                        # fallback to simple range
+                        atr_value = max(0.0, highs[i] - lows[i])
+
+                    entry = float(last_high)
+                    tr = atr_value * self.volatility_multiplier
+                    tp1 = round(entry + tr * 0.8, 8)
+                    tp2 = round(entry + tr * 1.6, 8)
+                    tp3 = round(entry + tr * 2.8, 8)
+                    stop = round(entry - tr * 1.2, 8)
+                    signals[i] = Signal(
+                        symbol=settings.SYMBOL,
+                        side="BUY",
+                        entry=entry,
+                        stop_loss=stop,
+                        take_profit_1=tp1,
+                        take_profit_2=tp2,
+                        take_profit_3=tp3,
+                        reason="smart_money_break_bull",
+                    )
+                    # clear last_high to wait for next pivot
+                    last_high = None
+                    last_high_bar = None
+
+            if last_low is not None:
+                broken = False
+                if self.confirmation == "Body":
+                    if closes[i] < last_low:
+                        broken = True
+                else:
+                    if lows[i] < last_low:
+                        broken = True
+                if broken:
+                    atr_idx = i - (self.atr_period)
+                    atr_value = None
+                    if atr_idx >= 0 and atr_idx < len(atr_series):
+                        atr_value = atr_series[atr_idx]
+                    else:
+                        atr_value = max(0.0, highs[i] - lows[i])
+
+                    entry = float(last_low)
+                    tr = atr_value * self.volatility_multiplier
+                    tp1 = round(entry - tr * 0.8, 8)
+                    tp2 = round(entry - tr * 1.6, 8)
+                    tp3 = round(entry - tr * 2.8, 8)
+                    stop = round(entry + tr * 1.2, 8)
+                    signals[i] = Signal(
+                        symbol=settings.SYMBOL,
+                        side="SELL",
+                        entry=entry,
+                        stop_loss=stop,
+                        take_profit_1=tp1,
+                        take_profit_2=tp2,
+                        take_profit_3=tp3,
+                        reason="smart_money_break_bear",
+                    )
+                    last_low = None
+                    last_low_bar = None
 
         return signals

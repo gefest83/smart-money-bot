@@ -11,31 +11,59 @@ class ExchangeBase:
     def fetch_ohlcv(self, symbol: str, timeframe: str, limit: int = 250) -> list[list[float]]:
         raise NotImplementedError
 
+    def fetch_balance(self) -> dict:
+        return {}
+
+    def create_order(self, *args, **kwargs) -> Any:
+        raise NotImplementedError
+
     def close(self) -> None:
         pass
 
 class CCXTExchange(ExchangeBase):
-    def __init__(self, id: str = "binance", testnet: bool = True, api_key: str | None = None, secret: str | None = None):
+    # map friendly exchange ids to ccxt ids when necessary
+    SUPPORTED = {"binance", "bybit", "okx", "bingx", "mexc"}
+
+    def __init__(self, id: str = "binance", testnet: bool = True, api_key: str | None = None, secret: str | None = None, market: str = "spot"):
         self.id = id
         self.testnet = testnet
         self.api_key = api_key
         self.secret = secret
         self.client: ccxt.Exchange | None = None
+        self.market = market  # 'spot' or 'futures'
 
     def connect(self) -> None:
-        ex_cls = getattr(ccxt, self.id)
-        params: dict[str, Any] = {}
-        if self.id == "binance":
-            params = {"enableRateLimit": True}
-            if self.testnet:
-                params["options"] = {"defaultType": "future"}
+        ex_id = self.id
+        if ex_id not in self.SUPPORTED:
+            # allow any ccxt id but warn
+            ex_id = self.id
 
-        self.client = ex_cls({"apiKey": self.api_key or "", "secret": self.secret or "", **params})
-        # testnet config if supported
-        if self.testnet and hasattr(self.client, "set_sandbox_mode"):
+        try:
+            ex_cls = getattr(ccxt, ex_id)
+        except Exception as exc:
+            # fallback: use generic ccxt exchange loader
+            self.client = ccxt.Exchange({})
+            raise RuntimeError(f"Exchange {self.id} not supported in CCXT: {exc}")
+
+        params: dict[str, Any] = {"apiKey": self.api_key or "", "secret": self.secret or "", "enableRateLimit": True}
+
+        # configure market type
+        if self.market and self.market.lower() in ("futures", "future"):
+            # ccxt unified markets often use 'defaultType'
+            params.setdefault("options", {})
+            params["options"]["defaultType"] = "future"
+
+        # instantiate
+        self.client = ex_cls(params)
+
+        # try sandbox/testnet mode when available
+        if self.testnet:
+            # unified method
             try:
-                self.client.set_sandbox_mode(True)
+                if hasattr(self.client, "set_sandbox_mode"):
+                    self.client.set_sandbox_mode(True)
             except Exception:
+                # some exchanges use urls override; skipping complex handling here
                 pass
 
     def fetch_ohlcv(self, symbol: str, timeframe: str, limit: int = 250) -> list[list[float]]:
@@ -43,6 +71,19 @@ class CCXTExchange(ExchangeBase):
             raise RuntimeError("Exchange not connected")
         return self.client.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
 
+    def fetch_balance(self) -> dict:
+        if self.client is None:
+            return {}
+        try:
+            return self.client.fetch_balance()
+        except Exception:
+            return {}
+
+    def create_order(self, symbol: str, side: str, type: str, amount: float, price: float | None = None, params: dict | None = None) -> Any:
+        if self.client is None:
+            raise RuntimeError("Exchange not connected")
+        params = params or {}
+        return self.client.create_order(symbol, type, side.lower(), amount, price, params)
+
     def close(self) -> None:
-        # ccxt clients don't usually need explicit close
         self.client = None

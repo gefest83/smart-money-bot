@@ -24,6 +24,7 @@ class Position:
     entry: float
     stop_loss: float
     amount: float
+    remaining: Optional[float] = None
     take_profit_1: Optional[float] = None
     take_profit_2: Optional[float] = None
     take_profit_3: Optional[float] = None
