@@ -1,0 +1,3 @@
+Trigger build at 2026-08-05T01:53:00Z
+
+This file is updated to trigger GitHub Actions workflow for Docker build and publish to GHCR.
