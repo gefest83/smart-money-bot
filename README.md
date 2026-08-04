@@ -33,6 +33,12 @@ copy .env.example .env
 python main.py
 ```
 
+## Бэктест
+
+```bash
+python backtest.py
+```
+
 ## Результаты
 
 - `data/trades.db` — база со всеми закрытыми сделками.
@@ -41,6 +47,7 @@ python main.py
 ## Структура
 
 - `main.py` — точка входа приложения.
+- `backtest.py` — корневой скрипт для запуска бэктеста.
 - `app/exchanges/manager.py` — загрузка цены и свечей через CCXT.
 - `app/executor/paper.py` — симуляция бумажной торговли.
 - `app/risk/manager.py` — расчет размера позиции.
