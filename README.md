@@ -51,6 +51,7 @@ python backtest.py
 - `app/exchanges/manager.py` — загрузка цены и свечей через CCXT.
 - `app/executor/paper.py` — симуляция бумажной торговли.
 - `app/risk/manager.py` — расчет размера позиции.
-- `app/strategy/simple.py` — простая стратегия для генерации сигналов.
+- `app/strategies/simple.py` — простая стратегия для генерации сигналов.
+- `app/models/` — модели данных для сделок, позиций и сигналов.
 - `app/database/trades.py` — сохранение сделок в SQLite.
 - `app/backtest/report.py` — экспорт истории в CSV.
