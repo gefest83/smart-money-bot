@@ -1,0 +1,20 @@
+[project]
+name = "smart-money-bot"
+version = "0.1.0"
+description = "Smart Money Bot for crypto paper trading and simple backtesting."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ccxt>=3.0",
+    "python-dotenv>=1.0",
+    "loguru>=0.7.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/gefest83/smart-money-bot"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
