@@ -17,6 +17,12 @@ class ExchangeBase:
     def create_order(self, *args, **kwargs) -> Any:
         raise NotImplementedError
 
+    def fetch_order(self, order_id: str) -> Any:
+        raise NotImplementedError
+
+    def cancel_order(self, order_id: str) -> Any:
+        raise NotImplementedError
+
     def fetch_ticker(self, symbol: str) -> dict:
         return {}
 
@@ -38,35 +44,27 @@ class CCXTExchange(ExchangeBase):
     def connect(self) -> None:
         ex_id = self.id
         if ex_id not in self.SUPPORTED:
-            # allow any ccxt id but warn
             ex_id = self.id
 
         try:
             ex_cls = getattr(ccxt, ex_id)
         except Exception as exc:
-            # fallback: use generic ccxt exchange loader
             self.client = ccxt.Exchange({})
             raise RuntimeError(f"Exchange {self.id} not supported in CCXT: {exc}")
 
         params: dict[str, Any] = {"apiKey": self.api_key or "", "secret": self.secret or "", "enableRateLimit": True}
 
-        # configure market type
         if self.market and self.market.lower() in ("futures", "future"):
-            # ccxt unified markets often use 'defaultType'
             params.setdefault("options", {})
             params["options"]["defaultType"] = "future"
 
-        # instantiate
         self.client = ex_cls(params)
 
-        # try sandbox/testnet mode when available
         if self.testnet:
-            # unified method
             try:
                 if hasattr(self.client, "set_sandbox_mode"):
                     self.client.set_sandbox_mode(True)
             except Exception:
-                # some exchanges use urls override; skipping complex handling here
                 pass
 
     def fetch_ohlcv(self, symbol: str, timeframe: str, limit: int = 250) -> list[list[float]]:
@@ -86,16 +84,37 @@ class CCXTExchange(ExchangeBase):
         if self.client is None:
             raise RuntimeError("Exchange not connected")
         params = params or {}
-        return self.client.create_order(symbol, type, side.lower(), amount, price, params)
+        try:
+            return self.client.create_order(symbol, type, side.lower(), amount, price, params)
+        except Exception as exc:
+            # some exchanges vary positional args
+            try:
+                return self.client.create_order(symbol, type, side.lower(), amount)
+            except Exception:
+                raise exc
+
+    def fetch_order(self, order_id: str) -> Any:
+        if self.client is None:
+            return None
+        try:
+            return self.client.fetch_order(order_id)
+        except Exception:
+            return None
+
+    def cancel_order(self, order_id: str) -> Any:
+        if self.client is None:
+            return None
+        try:
+            return self.client.cancel_order(order_id)
+        except Exception:
+            return None
 
     def fetch_ticker(self, symbol: str) -> dict:
         if self.client is None:
             return {}
         try:
-            # unified fetch_ticker
             return self.client.fetch_ticker(symbol)
         except Exception:
-            # fallback to last OHLCV
             try:
                 ohlcv = self.client.fetch_ohlcv(symbol, timeframe='1m', limit=1)
                 if ohlcv and len(ohlcv) > 0:

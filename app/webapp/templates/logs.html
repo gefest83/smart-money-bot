@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Live Logs</title>
+    <style>pre{white-space:pre-wrap;}</style>
+  </head>
+  <body>
+    <h2>Live Logs</h2>
+    <pre id="logarea">{% for l in logs %}{{ l }}\n{% endfor %}</pre>
+    <script>
+      const ws = new WebSocket(`ws://${location.host}/logs/stream`);
+      ws.onmessage = (e) => {
+        const el = document.getElementById('logarea');
+        el.textContent = el.textContent + '\n' + e.data;
+        el.scrollTop = el.scrollHeight;
+        ws.send('ping');
+      };
+    </script>
+  </body>
+</html>

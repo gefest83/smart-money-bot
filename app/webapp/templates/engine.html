@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Engine</title>
+  </head>
+  <body>
+    <h2>Engine status: {{ status }}</h2>
+    {% if running %}
+      <form action="/engine/stop" method="post"><button type="submit">Stop Engine</button></form>
+    {% else %}
+      <form action="/engine/start" method="post">
+        Mode: <select name="mode"><option value="paper">paper</option><option value="live">live</option></select>
+        Interval(s): <input name="interval" value="10"/>
+        <button type="submit">Start Engine</button>
+      </form>
+    {% endif %}
+    <p><a href="/">Home</a></p>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Trades</title>
+  </head>
+  <body>
+    <h2>Trades</h2>
+    <table border=1 cellpadding=6>
+      <tr><th>ID</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Exit</th><th>Amount</th><th>PnL</th><th>Reason</th><th>Opened</th><th>Closed</th></tr>
+      {% for r in rows %}
+      <tr>
+        {% for c in r %}<td>{{ c }}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    <p><a href="/">Home</a></p>
+  </body>
+</html>
