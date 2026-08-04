@@ -67,6 +67,9 @@ PAPER
         return self.executor.update(price)
 
 
+    def close_position(self, price: float, reason: str = "Закрытие позиции"):
+        return self.executor.close_position(price, reason=reason)
+
     def status(self):
 
         return {

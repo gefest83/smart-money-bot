@@ -12,11 +12,7 @@ class BaseExecutor(ABC):
 
 
     @abstractmethod
-    def open_position(
-        self,
-        signal,
-        amount: float,
-    ):
+    def open_position(self, *args, **kwargs):
         """
         Открытие позиции.
         """
@@ -27,6 +23,7 @@ class BaseExecutor(ABC):
     def close_position(
         self,
         price: float,
+        reason: str = "Закрытие позиции",
     ):
         """
         Закрытие позиции.
