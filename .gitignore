@@ -1,15 +1,16 @@
-.venv/
-venv/
-
-.idea/
-.vscode/
-
-dist/
-build/
-
-.pytest_cache/
-.coverage
-
-__pycache__/
-*.pyc
-!__pycache__/.gitkeep
+ .venv/
+ venv/
+ 
+ .idea/
+ .vscode/
+ 
+ dist/
+ build/
+ 
+ .pytest_cache/
+ .coverage
+ 
+ __pycache__/
+ *.pyc
+ !__pycache__/.gitkeep
+ 
