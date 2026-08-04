@@ -1,19 +1,8 @@
-__pycache__/
-*.pyc
-
 .venv/
 venv/
 
-.env
-
 .idea/
 .vscode/
-
-logs/
-
-*.db
-*.sqlite3
-reports/
 
 dist/
 build/
