@@ -9,7 +9,7 @@ from app.database.statistics import TradeStatistics
 from app.database.trades import TradeDatabase
 from app.exchanges.manager import ExchangeManager
 from app.executor.manager import ExecutorManager
-from app.strategy.simple import SimpleStrategy
+from app.strategies.simple import SimpleStrategy
 
 
 def run() -> int:
